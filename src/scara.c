@@ -99,9 +99,11 @@ int main (void)
   initStepper();
   sei();
 
-  uint16_t arrayA[2] = {0, 3072};
-  uint16_t arrayB[2] = {2048, 3072};
-
+  //uint16_t arrayA[2] = {0, 3072};
+  //uint16_t arrayB[2] = {2048, 3072};
+  
+  uint16_t arrayA[2] = {0, 2560};
+  uint16_t arrayB[2] = {3584, 2048};
   
   while (1) {
     for (uint8_t i = 0; i < 2; ++i) {
@@ -113,7 +115,7 @@ int main (void)
         motorState(&state);
       }
 
-      _delay_ms(2000);
+      _delay_ms(1000);
     }
   }
 
