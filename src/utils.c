@@ -10,7 +10,7 @@ void initTimer1(void)
   TCCR1A = 0x00;
   TCCR1B = (1 << WGM12) | (1 << CS12);
   TIMSK1 = (1 << OCIE1A);
-  OCR1A = 312;      // 62500 = 1s = 1Hz
+  OCR1A = 100;      // 62500 = 1s = 1Hz
 }
 
 
@@ -82,12 +82,12 @@ void readAngle(uint8_t *upper, uint8_t *lower, uint16_t *raw_angle)
   stopI2C();
 }
 
-uint16_t getAngle_A(uint16_t *raw_angle)
+uint16_t offsetAngle_A(uint16_t *raw_angle)
 {
   return (*raw_angle - OFFSET_A + 4096) % 4096;
 }
 
-uint16_t getAngle_B(uint16_t *raw_angle)
+uint16_t offsetAngle_B(uint16_t *raw_angle)
 {
   return (*raw_angle - OFFSET_B + 4096) % 4096;
 }
@@ -117,7 +117,7 @@ void channel(uint8_t bus)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// NEMA17 Functions
+/// TMC2209 Functions
 ////////////////////////////////////////////////////////////////////////////////
 void initStepper(void)
 {

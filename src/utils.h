@@ -41,8 +41,8 @@ uint8_t readNACK(void);
 void channel(uint8_t bus);
 void initAS5600(void);
 void readAngle(uint8_t *upper, uint8_t *lower, uint16_t *raw_angle);
-uint16_t getAngle_A(uint16_t *raw_angle);
-uint16_t getAngle_B(uint16_t *raw_angle);
+uint16_t offsetAngle_A(uint16_t *raw_angle);
+uint16_t offsetAngle_B(uint16_t *raw_angle);
 int16_t wrapAngle(int16_t error);
 
 void initStepper(void);

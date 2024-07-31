@@ -5,6 +5,7 @@
 #include "utils.h"
 
 #define NTOL(error) (error > TOL || error < -TOL)
+#define SRATIO(count, ratio) (count % ratio == 0)
 
 volatile uint8_t stepFlag = 0;
 
@@ -26,12 +27,12 @@ void updateError(void)
 {
   channel(CHANNEL_A);
   readAngle(&stepper.upperA, &stepper.lowerA, &stepper.rawA);
-  stepper.measA = getAngle_A(&stepper.rawA);
+  stepper.measA = offsetAngle_A(&stepper.rawA);
   stepper.errA = wrapAngle(stepper.setA - stepper.measA);
 
   channel(CHANNEL_B);
   readAngle(&stepper.upperB, &stepper.lowerB, &stepper.rawB);
-  stepper.measB = getAngle_B(&stepper.rawB);
+  stepper.measB = offsetAngle_B(&stepper.rawB);
   stepper.errB = wrapAngle(stepper.setB - stepper.measB);
 }
 
@@ -68,11 +69,11 @@ int main (void)
   initStepper();
   sei();
 
-  stepper.setA = 0;
-  stepper.setB = 2048;
-  //stepper.setA = 3072;
-  //stepper.setB = 3072;
-
+  //stepper.setA = 0;
+  //stepper.setB = 2048;
+  stepper.setA = 3072;
+  stepper.setB = 3072;
+  
   uint8_t state = 0;
 
   while (1) {
@@ -94,8 +95,8 @@ int main (void)
           continue;
         }
 
-        if (stepper.countA % stepper.ratioA == 0) controlA();
-        if (stepper.countB % stepper.ratioB == 0) controlB();
+        if (NTOL(stepper.errA) && SRATIO(stepper.countA, stepper.ratioA)) controlA();
+        if (NTOL(stepper.errB) && SRATIO(stepper.countB, stepper.ratioB)) controlB();
 
         ++stepper.countA;
         ++stepper.countB;
