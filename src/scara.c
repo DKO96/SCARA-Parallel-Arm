@@ -8,6 +8,7 @@
 #define SRATIO(count, ratio) (count % ratio == 0)
 
 volatile uint8_t stepFlag = 0;
+uint8_t state = 0;
 
 typedef struct {
   uint8_t upperA, lowerA, upperB, lowerB;
@@ -60,6 +61,35 @@ void motorSync(void)
   }
 }
 
+void motorState(uint8_t* state)
+{
+  if (!*state) {
+    updateError();
+    
+    if (NTOL(stepper.errA) || NTOL(stepper.errB)) {
+      stepper.countA = 0;
+      stepper.countB = 0;
+      *state = 1;
+    }
+  } else {
+    if (stepFlag) {
+      stepFlag = 0;
+      updateError();
+      motorSync();
+
+      if (!(NTOL(stepper.errA) && NTOL(stepper.errB))) {
+        *state = 0;
+      }
+
+      if (NTOL(stepper.errA) && SRATIO(stepper.countA, stepper.ratioA)) controlA();
+      if (NTOL(stepper.errB) && SRATIO(stepper.countB, stepper.ratioB)) controlB();
+
+      ++stepper.countA;
+      ++stepper.countB;
+    }
+  }
+}
+
 
 int main (void)
 {
@@ -69,43 +99,23 @@ int main (void)
   initStepper();
   sei();
 
-  //stepper.setA = 0;
-  //stepper.setB = 2048;
-  stepper.setA = 3072;
-  stepper.setB = 3072;
+  uint16_t arrayA[2] = {0, 3072};
+  uint16_t arrayB[2] = {2048, 3072};
+
   
-  uint8_t state = 0;
-
   while (1) {
-    if (!state) {
-      updateError();
-      if (NTOL(stepper.errA) || NTOL(stepper.errB)) {
-        stepper.countA = 0;
-        stepper.countB = 0;
-        state = 1;
+    for (uint8_t i = 0; i < 2; ++i) {
+      stepper.setA = arrayA[i];
+      stepper.setB = arrayB[i];
+      state = 1;
+
+      while (state == 1) {
+        motorState(&state);
       }
-    } else {
-      if (stepFlag) {
-        stepFlag = 0;
-        updateError();
-        motorSync();
 
-        if (!(NTOL(stepper.errA) && NTOL(stepper.errB))) {
-          state = 0;
-          continue;
-        }
-
-        if (NTOL(stepper.errA) && SRATIO(stepper.countA, stepper.ratioA)) controlA();
-        if (NTOL(stepper.errB) && SRATIO(stepper.countB, stepper.ratioB)) controlB();
-
-        ++stepper.countA;
-        ++stepper.countB;
-      }
+      _delay_ms(2000);
     }
   }
-
-
-
 
   return 0;
 }
