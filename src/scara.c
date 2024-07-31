@@ -4,7 +4,7 @@
 #include "USART.h"
 #include "utils.h"
 
-#define ATPOINT(error) (error > TOL || error < -TOL)
+#define NTOL(error) (error > TOL || error < -TOL)
 
 volatile uint8_t stepFlag = 0;
 
@@ -70,38 +70,41 @@ int main (void)
 
   stepper.setA = 0;
   stepper.setB = 2048;
-  stepper.setA = 3072;
-  stepper.setB = 3072;
+  //stepper.setA = 3072;
+  //stepper.setB = 3072;
+
+  uint8_t state = 0;
 
   while (1) {
-    updateError();
-    motorSync();
-
-    if (ATPOINT(stepper.errA) || ATPOINT(stepper.errB)) {
-      stepper.countA = 0;
-      stepper.countB = 0;
-
-      while (ATPOINT(stepper.errA) || ATPOINT(stepper.errB)) {
+    if (!state) {
+      updateError();
+      if (NTOL(stepper.errA) || NTOL(stepper.errB)) {
+        stepper.countA = 0;
+        stepper.countB = 0;
+        state = 1;
+      }
+    } else {
+      if (stepFlag) {
+        stepFlag = 0;
         updateError();
         motorSync();
 
-        if (stepFlag) {
-          stepFlag = 0;
-
-          if (stepper.countA % stepper.ratioA == 0) {
-            controlA();
-          }
-
-          if (stepper.countB % stepper.ratioB == 0) {
-            controlB();
-          }
-
-          ++stepper.countA;
-          ++stepper.countB;
+        if (!(NTOL(stepper.errA) && NTOL(stepper.errB))) {
+          state = 0;
+          continue;
         }
+
+        if (stepper.countA % stepper.ratioA == 0) controlA();
+        if (stepper.countB % stepper.ratioB == 0) controlB();
+
+        ++stepper.countA;
+        ++stepper.countB;
       }
     }
   }
+
+
+
 
   return 0;
 }
