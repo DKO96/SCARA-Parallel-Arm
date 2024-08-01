@@ -10,7 +10,7 @@ void initTimer1(void)
   TCCR1A = 0x00;
   TCCR1B = (1 << WGM12) | (1 << CS12);
   TIMSK1 = (1 << OCIE1A);
-  OCR1A = 100;      // 62500 = 1s = 1Hz
+  OCR1A = 200;      // 62500 = 1s = 1Hz
 }
 
 

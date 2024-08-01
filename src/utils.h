@@ -22,7 +22,7 @@
 
 #define POS(PIN) ((PORTD) |= (1 << (PIN))) 
 #define NEG(PIN) ((PORTD) &= ~(1 << (PIN)))
-#define TOL 10
+#define TOL 2
 
 #define ANGLE_MAX 4096
 #define OFFSET_A 2583

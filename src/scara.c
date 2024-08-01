@@ -6,9 +6,11 @@
 
 #define NTOL(error) (error > TOL || error < -TOL)
 #define SRATIO(count, ratio) (count % ratio == 0)
+#define SIZE 4
 
 volatile uint8_t stepFlag = 0;
 uint8_t state = 0;
+static uint16_t iteration = 0;
 
 typedef struct {
   uint8_t upperA, lowerA, upperB, lowerB;
@@ -77,7 +79,7 @@ void motorState(uint8_t* state)
       updateError();
       motorSync();
 
-      if (!(NTOL(stepper.errA) && NTOL(stepper.errB))) {
+      if (!(NTOL(stepper.errA) || NTOL(stepper.errB))) {
         *state = 0;
       }
 
@@ -98,22 +100,36 @@ int main (void)
   initTimer1();
   initStepper();
   sei();
-
-  //uint16_t arrayA[2] = {0, 3072};
-  //uint16_t arrayB[2] = {2048, 3072};
   
-  uint16_t arrayA[2] = {0, 2560};
-  uint16_t arrayB[2] = {3584, 2048};
+  uint16_t arrayA[SIZE] = {4041, 4062, 3199, 3342};
+  uint16_t arrayB[SIZE] = {2102, 2801, 2944, 2081};
   
   while (1) {
-    for (uint8_t i = 0; i < 2; ++i) {
+    for (uint8_t i = 0; i < SIZE; ++i) {
       stepper.setA = arrayA[i];
       stepper.setB = arrayB[i];
       state = 1;
+      ++iteration;
 
       while (state == 1) {
         motorState(&state);
       }
+
+      printString("iter: ");
+      printInteger(iteration);
+      printString("\t");
+      
+      printString("pos: ");
+      printInteger(i);
+      printString("\t");
+
+      printString("errA: ");
+      printInteger(stepper.errA);
+      printString("\t");
+
+      printString("errB: ");
+      printInteger(stepper.errB);
+      printString("\r\n");
 
       _delay_ms(1000);
     }
