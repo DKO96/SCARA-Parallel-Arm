@@ -79,7 +79,7 @@ void motorState(uint8_t* state)
       updateError();
       motorSync();
 
-      if (!(NTOL(stepper.errA) || NTOL(stepper.errB))) {
+      if (!NTOL(stepper.errA) && !NTOL(stepper.errB)) {
         *state = 0;
       }
 
