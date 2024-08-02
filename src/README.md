@@ -12,8 +12,8 @@ avr-gcc -mmcu=atmega328p stepper.o USART.o utils.o -o stepper && \
 avr-objcopy -O ihex -R .eeprom stepper stepper.hex && \
 avrdude -v -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 115200 -U flash:w:stepper.hex
 
-avr-gcc -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -o inverseKinematics.o inverseKinematics.c -lm && \
+avr-gcc -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -o cordic.o cordic.c -lm && \
 avr-gcc -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -o USART.o USART.c && \
-avr-gcc -mmcu=atmega328p inverseKinematics.o USART.o -o inverseKinematics && \
-avr-objcopy -O ihex -R .eeprom inverseKinematics inverseKinematics.hex && \
-avrdude -v -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 115200 -U flash:w:inverseKinematics.hex
+avr-gcc -mmcu=atmega328p cordic.o USART.o -o cordic && \
+avr-objcopy -O ihex -R .eeprom cordic cordic.hex && \
+avrdude -v -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 115200 -U flash:w:cordic.hex
