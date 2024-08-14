@@ -33,9 +33,11 @@ int32_t fpsqrt(int32_t r)
   return q;
 }
 
-void cordic(int32_t theta, int32_t* s, int32_t* c)
+void cordic(float ft, int32_t* s, int32_t* c)
 {
-  int32_t x = 1 << 14;
+  int32_t theta = ft * FP;
+
+  int32_t x = FP;
   int32_t y = 0;
   int32_t z = theta;
   int32_t d, tx, ty, tz;
@@ -53,8 +55,10 @@ void cordic(int32_t theta, int32_t* s, int32_t* c)
   *s = (K * y) >> 14;
 }
 
-int32_t arctan(int32_t x, int32_t y)
+int32_t arctan(float fx, float fy)
 {
+  int32_t x = fx * FP;
+  int32_t y = fy * FP;
   int32_t z = 0;
   int32_t d, tx, ty, tz;
 
@@ -70,9 +74,13 @@ int32_t arctan(int32_t x, int32_t y)
   return z;
 }
 
-int32_t arccos(int32_t x)
+int32_t arccos(float p)
 {
-  int32_t y = fpsqrt(1 - x*x);
+  int32_t x = p * FP;
+  int32_t x2 = (x * x) >> 14;
+  int32_t radicand = FP - x2;
+
+  int32_t y = fpsqrt(radicand << 14);
   int32_t z = 0;
   int32_t d, tx, ty, tz;
 
@@ -94,8 +102,8 @@ int main(void)
   initUSART();
 
   int32_t s, c;
-  int32_t theta = (int32_t)(1.22173 * FP);
-  cordic(theta, &s, &c);
+  float t = 1.22173;
+  cordic(t, &s, &c);
 
   printString("cos: ");
   printInteger(c);
@@ -104,17 +112,18 @@ int main(void)
   printInteger(s);
   printString("\r\n");
 
-  int32_t x = 0.1 * FP;
-  int32_t y = 0.5 * FP;
+  float x = 0.1;
+  float y = 0.5;
   int32_t z = arctan(x, y);
 
   printString("arctan: ");
   printInteger(z);
   printString("\r\n");
   
-  int32_t w = fpsqrt();
+  float p = 0.1;
+  int32_t w = arccos(p);
 
-  printString("fpsqrt: ");
+  printString("arccos: ");
   printInteger(w);
   printString("\r\n");
 

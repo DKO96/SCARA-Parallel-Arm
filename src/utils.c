@@ -10,7 +10,7 @@ void initTimer1(void)
   TCCR1A = 0x00;
   TCCR1B = (1 << WGM12) | (1 << CS12);
   TIMSK1 = (1 << OCIE1A);
-  OCR1A = 200;      // 62500 = 1s = 1Hz
+  OCR1A = 625;      // 62500 = 1s = 1Hz
 }
 
 
@@ -170,10 +170,78 @@ int16_t ratio(int16_t a, int16_t b)
   return maxErr / minErr;
 }
 
+int32_t fpsqrt(int32_t r)
+{
+  uint32_t b = 1UL << 30;
+  uint32_t q = 0;
+
+  while (b > r)
+    b >>= 2;
+
+  while( b > 0 ) {
+    uint32_t t = q + b;
+    q >>= 1;           
+
+    if( r >= t ) {     
+      r -= t;        
+      q += b;        
+    }
+
+    b >>= 2;
+  }
+
+  return q;
+}
 
 
+////////////////////////////////////////////////////////////////////////////////
+/// Trig Functions
+////////////////////////////////////////////////////////////////////////////////
+uint16_t cordic_tab [] = {
+  12868, 7596, 4014, 2037, 1023, 512, 256, 
+  128, 64, 32, 16, 8, 4, 2, 1,
+};
 
+int32_t arctan(float fy, float fx)
+{
+  int32_t x = fx * FP;
+  int32_t y = fy * FP;
+  int32_t z = 0;
+  int32_t d, tx, ty, tz;
 
+  for (uint8_t i = 0; i < CORDIC_TABSIZE; ++i) {
+    d = (y >= 0) ? -1 : 1;
+    tx = x - d * (y >> i);
+    ty = d * (x >> i) + y;
+    tz = z - (d * cordic_tab[i]);
+
+    x = tx; y = ty; z = tz;
+  }
+
+  return z;
+}
+
+int32_t arccos(float p)
+{
+  int32_t x = p * FP;
+  int32_t x2 = (x * x) >> 14;
+  int32_t radicand = FP - x2;
+
+  int32_t y = fpsqrt(radicand << 14);
+  int32_t z = 0;
+  int32_t d, tx, ty, tz;
+
+  for (uint8_t i = 0; i < CORDIC_TABSIZE; ++i) {
+    d = (y >= 0) ? -1 : 1;
+    tx = x - d * (y >> i);
+    ty = d * (x >> i) + y;
+    tz = z - (d * cordic_tab[i]);
+
+    x = tx; y = ty; z = tz;
+  }
+
+  return z;
+}
 
 
 

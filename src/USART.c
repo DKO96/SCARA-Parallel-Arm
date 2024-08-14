@@ -47,9 +47,9 @@ void printString(const char myString[])
   }
 }
 
-void printInteger(int64_t num)
+void printInteger(int32_t num)
 {
-  char buffer[21];  
+  char buffer[31];  
   int i = 0;
 
   if (num == 0) {

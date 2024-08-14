@@ -28,6 +28,10 @@
 #define OFFSET_A 2583
 #define OFFSET_B 3370
 
+#define CORDIC_TABSIZE 14
+#define FP (1 << 14)
+#define K 9949
+
 void initTimer1(void);
 void initTimer0(void);
 
@@ -53,6 +57,10 @@ int16_t abs(int16_t x);
 int16_t max(int16_t a, int16_t b);
 int16_t min(int16_t a, int16_t b);
 int16_t ratio(int16_t a, int16_t b);
+int32_t fpsqrt(int32_t r);
+
+int32_t arctan(float fy, float fx);
+int32_t arccos(float p);
 
 #endif 
 

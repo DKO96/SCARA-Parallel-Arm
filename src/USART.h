@@ -10,4 +10,4 @@ void transmitByte(uint8_t data);
 void printByte(uint8_t byte);
 void printBinary(uint16_t byte);
 void printString(const char myString[]);
-void printInteger(int64_t num);
+void printInteger(int32_t num);
