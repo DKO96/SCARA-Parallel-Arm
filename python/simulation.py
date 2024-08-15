@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 import inverseKin as ik
 
@@ -20,15 +21,22 @@ class Simulation:
     plt.figure(figsize=(12, 10))
 
     for i in range(len(p)):
+      # get position of stepper arms
       jointA = np.array([self.L1*np.cos(p[i][0]), self.L1*np.sin(p[i][0])])
       jointB = np.array([self.D + self.L1*np.cos(p[i][1]), self.L1*np.sin(p[i][1])])
 
+      # plot stepper arms
       plt.plot([self.baseA[0], jointA[0]], [self.baseA[1], jointA[1]], 
                c[i], label=l[i], linewidth=4, alpha=a[i])
       plt.plot([self.baseB[0], jointB[0]], [self.baseB[1], jointB[1]], c[i], linewidth=4, alpha=a[i])
+      
+      # plot desired end-effector trajectory
+      plt.plot([p[0][2][0], p[1][2][0]], [p[0][2][1], p[1][2][1]], 'r-', linewidth=2)
+
+      # plot end-effector position
       plt.plot([jointA[0], p[i][2][0]], [jointA[1], p[i][2][1]], c[i], linewidth=4, alpha=a[i])
       plt.plot([jointB[0], p[i][2][0]], [jointB[1], p[i][2][1]], c[i], linewidth=4, alpha=a[i])
-      plt.plot([p[0][2][0], p[1][2][0]], [p[0][2][1], p[1][2][1]], 'r-', linewidth=2)
+
       plt.title(f'SCARA Robot Configuration')
       plt.xlabel('x-axis')
       plt.ylabel('y-axis')
@@ -45,14 +53,30 @@ class Simulation:
     for i in range(len(ang)):
       plt.clf()
 
+      # get position of stepper arms
       jointA = np.array([self.L1*np.cos(ang[i][0]), self.L1*np.sin(ang[i][0])])
       jointB = np.array([self.D + self.L1*np.cos(ang[i][1]), self.L1*np.sin(ang[i][1])])
 
+      # plot stepper arms
       plt.plot([self.baseA[0], jointA[0]], [self.baseA[1], jointA[1]], 'go-', linewidth=4)
       plt.plot([self.baseB[0], jointB[0]], [self.baseB[1], jointB[1]], 'bo-', linewidth=4)
-      plt.plot([jointA[0], traj[i][0]], [jointA[1], traj[i][1]], 'go-', linewidth=4)
-      plt.plot([jointB[0], traj[i][0]], [jointB[1], traj[i][1]], 'bo-', linewidth=4)
+
+      # plot desired trajectory
       plt.plot(traj[:,0], traj[:,1], 'r-')
+      
+      # plot possible end-effector position
+      circleA = patches.Circle((jointA), 200, edgecolor='green', 
+                               facecolor='none', linewidth=2, alpha=0.5)
+      plt.gca().add_patch(circleA)
+
+      circleB = patches.Circle((jointB), 200, edgecolor='blue', 
+                               facecolor='none', linewidth=2, alpha=0.5)
+      plt.gca().add_patch(circleB)
+
+      # plot end-effector position
+      #plt.plot([jointA[0], traj[i][0]], [jointA[1], traj[i][1]], 'go-', linewidth=4)
+      #plt.plot([jointB[0], traj[i][0]], [jointB[1], traj[i][1]], 'bo-', linewidth=4)
+
       plt.title(f'SCARA Robot Configuration')
       plt.xlabel('x-axis')
       plt.ylabel('y-axis')
@@ -60,7 +84,7 @@ class Simulation:
       plt.ylim([-71, 331])
       plt.grid(True)
 
-      plt.pause(0.005)
+      plt.pause(0.001)
 
     plt.show()
 
@@ -76,7 +100,6 @@ def main():
 
   # create trajectory
   trajectory, angles = ik.lineTrajectory(start_coord, end_coord, s.L1, s.L2, s.D)
-  print(trajectory)
 
   # plot manipulator position
   start = (s1, s2, start_coord)
