@@ -28,7 +28,8 @@ class Simulation:
       # plot stepper arms
       plt.plot([self.baseA[0], jointA[0]], [self.baseA[1], jointA[1]], 
                c[i], label=l[i], linewidth=4, alpha=a[i])
-      plt.plot([self.baseB[0], jointB[0]], [self.baseB[1], jointB[1]], c[i], linewidth=4, alpha=a[i])
+      plt.plot([self.baseB[0], jointB[0]], [self.baseB[1], jointB[1]], 
+               c[i], linewidth=4, alpha=a[i])
       
       # plot desired end-effector trajectory
       plt.plot([p[0][2][0], p[1][2][0]], [p[0][2][1], p[1][2][1]], 'r-', linewidth=2)

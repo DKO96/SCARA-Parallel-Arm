@@ -14,7 +14,7 @@ def inverseKinematics(x, y, L1, L2, D):
   return q1, q2
 
 def lineTrajectory(start, end, L1, L2, D):
-  N = int(np.linalg.norm(start - end))
+  N = int(np.linalg.norm(start - end))*4
   xl = np.linspace(start[0], end[0], N)
   yl = np.linspace(start[1], end[1], N)
 

@@ -11,7 +11,7 @@ def main():
 
   # determine start and end coordinates
   start_coord = np.array([-41, 180])
-  end_coord = np.array([0, 140])
+  end_coord = np.array([159, 100])
 
   # create trajectory
   trajectory, angles = ik.lineTrajectory(start_coord, end_coord, s.L1, s.L2, s.D)
@@ -34,8 +34,8 @@ def main():
 
   outputA = np.sign(diffStepsA)
   outputB = np.sign(diffStepsB)
-  #print(f"outputA: \n{outputA}\n")
-  #print(f"outputB: \n{outputB}\n")
+  print(f"outputA: \n{len(outputA)}\n")
+  print(f"outputB: \n{len(outputB)}\n")
 
   s.animation(trajectory, steps)
 
