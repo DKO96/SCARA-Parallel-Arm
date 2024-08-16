@@ -108,7 +108,28 @@ def main():
   s.plotScara(start, end)
 
   # run animation
-  s.animation(trajectory, angles)
+  motorA = angles[:,0]
+  motorB = angles[:,1]
+  #print(f"motorA: \n{motorA}\n")
+  #print(f"motorB: \n{motorB}\n")
+
+  steps = ik.stepAngles(angles, STEPSIZE)
+  stepsA = steps[:,0]
+  stepsB = steps[:,1]
+  #print(f"stepsA: \n{stepsA}\n")
+  #print(f"stepsB: \n{stepsB}\n")
+
+  diffStepsA = np.diff(stepsA)
+  diffStepsB = np.diff(stepsB)
+  #print(f"diffStepsA: \n{diffStepsA}\n")
+  #print(f"diffStepsB: \n{diffStepsB}\n")
+
+  outputA = np.sign(diffStepsA)
+  outputB = np.sign(diffStepsB)
+  print(f"outputA: \n{len(outputA)}\n")
+  print(f"outputB: \n{len(outputB)}\n")
+
+  s.animation(trajectory, steps)
 
 
 if __name__ == "__main__":

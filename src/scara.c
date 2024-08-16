@@ -4,15 +4,40 @@
 #include "USART.h"
 #include "utils.h"
 
-volatile uint8_t stepFlag = 0;
-uint32_t stepCount = 0;
+#define BUFFER_SIZE 4096
+#define START_MARKER 0xBE
+#define END_MARKER 0xEF
 
-ISR(TIMER1_COMPA_vect)
+volatile uint8_t stepFlag = 0;
+volatile uint32_t stepCount = 0;
+volatile uint16_t bufferIndex = 0;
+volatile uint8_t usartReceiving = 0;
+volatile 
+
+ISR (TIMER1_COMPA_vect)
 {
-  stepFlag = 1;
+  if (usartReceiving == 0) stepFlag = 1;
 }
 
-void setup(void);
+ISR (USART_RX_vect)
+{
+  // disable 16-bit timer interrupt
+  TIMSK1 &= ~(1 << OCIE1A);
+  usartReceiving = 1;
+
+  // read incoming bytes
+  uint8_t receivedByte = UDR0;
+
+  // check for start marker
+  if (receivedByte == START_MARKER) {
+    bufferIndex = 0;    // reset buffer index for new message
+  }
+  
+
+
+}
+
+void setup (void);
 
 int main (void)
 {
