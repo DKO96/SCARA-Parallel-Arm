@@ -85,7 +85,7 @@ class Simulation:
       plt.ylim([-71, 331])
       plt.grid(True)
 
-      plt.pause(0.001)
+      plt.pause(0.0001)
 
     plt.show()
 
@@ -113,6 +113,7 @@ def main():
   #print(f"motorA: \n{motorA}\n")
   #print(f"motorB: \n{motorB}\n")
 
+  STEPSIZE = 0.003926991
   steps = ik.stepAngles(angles, STEPSIZE)
   stepsA = steps[:,0]
   stepsB = steps[:,1]

@@ -19,7 +19,7 @@ def main():
     while ser.in_waiting:
       response = ser.readline().decode('ascii', errors='ignore').strip()
       print(f"Received: {response}")
-      if "READY" in response:
+      if "DONE" in response:
         break
 
     time.sleep(2)

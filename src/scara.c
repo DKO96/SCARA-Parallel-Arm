@@ -13,43 +13,53 @@ volatile uint32_t stepCount = 0;
 volatile uint32_t totalSteps = 0;
 
 volatile int8_t motor[MAX_BUFFER];
-volatile uint16_t bufferIndex = 0;
-volatile uint8_t receiving = 0;
-volatile uint8_t dataReady = 0;
+volatile uint16_t bIndex = 0;
+volatile enum {IDLE, RECEIVING, MOVING} state = IDLE;
+
+void setup (void);    // initialize utility functions
 
 ISR (TIMER1_COMPA_vect)
 {
-  if (!receiving) stepFlag = 1;
+  // 16-bit interrupt for stepper motors
+  if (state == MOVING) stepFlag = 1;
 }
 
 ISR (USART_RX_vect)
 {
+  // USART interrupt to receive stepper motor data array
+  // read USART byte data
   uint8_t receivedByte = UDR0;
 
-  if (receivedByte == START_MARKER) {
-    bufferIndex = 0;
-    receiving = 1;
-    TIMSK1 &= ~(1 << OCIE1A);
-
-  } else if (receivedByte == END_MARKER) {
-    totalSteps = bufferIndex;
-    receiving = 0;
-    dataReady = 1;
-    TIMSK1 |= (1 << OCIE1A);
-
-  } else if (receiving) {
-    if (bufferIndex < MAX_BUFFER) {
-      if (bufferIndex % 2 == 0) {
-        motor[bufferIndex / 2] = (receivedByte - '0') << 1;
-      } else {
-        motor[bufferIndex / 2] |= (receivedByte - '0');
+  switch (state) {
+    case IDLE:
+      if (receivedByte == START_MARKER) {
+        bIndex = 0;
+        state = RECEIVING;
+        TIMSK1 &= ~(1 << OCIE1A);       // disable 16-bit timer interrupt
       }
-      bufferIndex++;
-    }
+      break;
+
+    case RECEIVING:
+      if (receivedByte == END_MARKER) {
+        totalSteps = bIndex;
+        state = MOVING;
+        TIMSK1 |= (1 << OCIE1A);        // enable 16-bit timer interrupt
+
+      } else if (bIndex < MAX_BUFFER) {
+        if (bIndex % 2 == 0) {
+          motor[bIndex/2] = (receivedByte - '0') << 1;
+        } else {
+          motor[bIndex/2] |= (receivedByte - '0');
+        }
+        bIndex++;
+      }
+      break;
+
+    default:
+      break;
   }
 }
 
-void setup (void);
 
 int main (void)
 {
@@ -57,19 +67,22 @@ int main (void)
   OCR1A = 50;
 
   while (1) {
-    if (!stepFlag) continue;
-    stepFlag = 0;
-    
-    if (dataReady) {
-      for (uint16_t i = 0; i < totalSteps / 2; i++) {
-        printInteger(motor[i]);
-        printString(" ");
-      }
-      printString("\r\n");
-      _delay_ms(100);
-      printString("READY\r\n");
-      dataReady = 0;
+    if (state != MOVING || !stepFlag) {
+      continue;
     }
+
+    // move stepper motors
+    stepFlag = 0;
+
+    for (uint16_t i = 0; i < totalSteps / 2; i++) {
+      printInteger(motor[i]);
+      printString(" ");
+    }
+
+    printString("\r\n");
+    _delay_ms(100);
+    printString("DONE\r\n");
+    state = IDLE;
   }
 
   return 0;
