@@ -27,9 +27,9 @@ void initStepper(void)
 
 void stepMotor(int8_t direction, uint8_t dirPin, uint8_t stepPin)
 {
-  if (direction > 0) {
+  if (direction == 2) {
     POS(dirPin);
-  } else if (direction < 0) {
+  } else if (direction == 1) {
     NEG(dirPin);
   } else {
     return;

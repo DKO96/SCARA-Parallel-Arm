@@ -4,17 +4,19 @@
 #include "USART.h"
 #include "utils.h"
 
-#define MAX_BUFFER 128
-#define START_MARKER 0xBE
-#define END_MARKER 0xEF
+#define MAX_BUFFER 512
+#define SMARKER_A 0xBE
+#define SMARKER_B 0xC0
+#define EMARKER_B 0xDE
 
 volatile uint8_t stepFlag = 0;
-volatile uint32_t stepCount = 0;
 volatile uint32_t totalSteps = 0;
 
-volatile int8_t motor[MAX_BUFFER];
+volatile uint8_t motorA[MAX_BUFFER];
+volatile uint8_t motorB[MAX_BUFFER];
 volatile uint16_t bIndex = 0;
 volatile enum {IDLE, RECEIVING, MOVING} state = IDLE;
+static volatile uint8_t* currentMotor = motorA;
 
 void setup (void);    // initialize utility functions
 
@@ -32,24 +34,29 @@ ISR (USART_RX_vect)
 
   switch (state) {
     case IDLE:
-      if (receivedByte == START_MARKER) {
+      if (receivedByte == SMARKER_A) {
         bIndex = 0;
         state = RECEIVING;
+        currentMotor = motorA;
         TIMSK1 &= ~(1 << OCIE1A);       // disable 16-bit timer interrupt
       }
       break;
 
     case RECEIVING:
-      if (receivedByte == END_MARKER) {
+      if (receivedByte == SMARKER_B) {
+        bIndex = 0;
+        currentMotor = motorB;
+
+      } else if (receivedByte == EMARKER_B && currentMotor == motorB) {
         totalSteps = bIndex;
         state = MOVING;
         TIMSK1 |= (1 << OCIE1A);        // enable 16-bit timer interrupt
 
       } else if (bIndex < MAX_BUFFER) {
         if (bIndex % 2 == 0) {
-          motor[bIndex/2] = (receivedByte - '0') << 1;
+          currentMotor[bIndex/2] = (receivedByte - '0') << 1;
         } else {
-          motor[bIndex/2] |= (receivedByte - '0');
+          currentMotor[bIndex/2] |= (receivedByte - '0');
         }
         bIndex++;
       }
@@ -74,8 +81,14 @@ int main (void)
     // move stepper motors
     stepFlag = 0;
 
-    for (uint16_t i = 0; i < totalSteps / 2; i++) {
-      printInteger(motor[i]);
+    for (uint16_t i = 0; i < totalSteps/2; i++) {
+      printInteger(motorA[i]);
+      printString(" ");
+    }
+    printString("\r\n");
+
+    for (uint16_t i = 0; i < totalSteps/2; i++) {
+      printInteger(motorB[i]);
       printString(" ");
     }
 
