@@ -36,6 +36,7 @@ ISR (USART_RX_vect)
     receiving = 0;
     dataReady = 1;
     TIMSK1 |= (1 << OCIE1A);
+
   } else if (receiving) {
     if (bufferIndex < MAX_BUFFER) {
       if (bufferIndex % 2 == 0) {
@@ -64,8 +65,9 @@ int main (void)
         printInteger(motor[i]);
         printString(" ");
       }
-      printString("READY");
       printString("\r\n");
+      _delay_ms(100);
+      printString("READY\r\n");
       dataReady = 0;
     }
   }
