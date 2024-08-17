@@ -3,18 +3,25 @@ import numpy as np
 import serial 
 
 def main():
-  # initialize serial
   ser = serial.Serial('/dev/ttyUSB0', 38400)
-
   array = np.array([-1, 0, -1, 0, -1, 1, 1, 0, 1])
-
   mapping = {-1:b'01', 0:b'00', 1:b'10'}
-
   byte_array = b'\xBE' + b''.join(mapping[x] for x in array) + b'\xEF'
 
-  print(byte_array)
+  while True:
+    print(f"Sending: {byte_array}")
+    ser.write(byte_array)
+    time.sleep(0.5)
 
-  ser.write(byte_array)
+    # read response
+    #while True:
+    #  response = ser.readline().decode('ascii').strip()
+    #  print(f"Received: {response}")
+    #  if response == "READY":
+    #    break
+    #  time.sleep(0.1)
+
+    time.sleep(2)
 
   ser.close()
 
