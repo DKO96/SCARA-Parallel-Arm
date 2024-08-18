@@ -1,6 +1,5 @@
 import numpy as np
-import serial as ser
-
+import serial
 import inverseKin as ik
 from simulation import Simulation
 
@@ -16,21 +15,34 @@ def main():
   # create trajectory
   trajectory, angles = ik.lineTrajectory(start_coord, end_coord, s.L1, s.L2, s.D)
 
+  # get steps
   steps = ik.stepAngles(angles, STEPSIZE)
   stepsA = steps[:,0]
   stepsB = steps[:,1]
 
-  diffStepsA = np.diff(stepsA)
-  diffStepsB = np.diff(stepsB)
+  outputA = np.sign(np.diff(stepsA)).astype(int)
+  outputB = np.sign(np.diff(stepsB)).astype(int)
 
-  outputA = np.sign(diffStepsA)
-  outputB = np.sign(diffStepsB)
-  print(f"outputA: \n{len(outputA)}\n")
-  print(f"outputB: \n{len(outputB)}\n")
+  # map output
+  mapping = {-1:b'\x01', 0:b'\x11', 1:b'\x10'}
+  bytesA = np.array([mapping[x] for x in outputA])
+  bytesB = np.array([mapping[x] for x in outputB])
 
-  print(f"outputA: \n{outputA}\n")
-  print(f"outputB: \n{outputB}\n")
+  # initiate serial 
+  ser = serial.Serial('/dev/ttyUSB0', 38400, timeout=1)
 
+  for i in range(len(outputA)):
+    sending = b'\xBE' + bytesA[i] + b'\xC0' + bytesB[i] + b'\xDE'
+    ser.write(sending)
+    ser.flush()
+
+    while ser.in_waiting:
+      response = ser.readline().decode('ascii', errors='ignore').strip()
+      if "N" in response:
+        break
+
+
+  
 
 if __name__ == "__main__":
   main()

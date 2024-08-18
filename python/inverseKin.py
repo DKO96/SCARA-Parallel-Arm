@@ -25,12 +25,6 @@ def lineTrajectory(start, end, L1, L2, D):
 
   return trajectory, angles
 
-def convertAngle(r):
-  # convert rads to motor angles
-  motorAngles =  np.floor((r * 4096) / (2*np.pi)).astype(int)
-  wrappedAngles = (motorAngles % 4096).astype(int)
-  return wrappedAngles
-
 def stepAngles(angles, stepsize):
   q1_adjusted = [angles[0, 0]]
   q2_adjusted = [angles[0, 1]]

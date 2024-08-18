@@ -14,10 +14,9 @@ def main():
   # motor B
   array2 = np.array([-1, 0, 1, 0])
   #byteArray2 = b'\xC0' + b''.join(mapping[x] for x in array2) + b'\xDE'
-  byteArray2 = b'\xC0' + b'\x01' + b'\xDE'
+  byteArray2 = b'\xC0' + b'\x00' + b'\xDE'
 
   output = byteArray1 + byteArray2
-  count = 0
 
   while True:
     print(f"Sending: {output}");

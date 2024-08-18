@@ -54,7 +54,7 @@ ISR (USART_RX_vect)
       } else { 
         if (receivedByte == 0x01) {
           *currentMotor = -1;
-        } else if (receivedByte == 0x00) {
+        } else if (receivedByte == 0x11) {
           *currentMotor = 0;
         } else if (receivedByte == 0x10) {
           *currentMotor = 1;
@@ -75,7 +75,7 @@ int main (void)
 
   while (1) {
     if (state == DONE) {
-      printString("DONE\r\n");
+      printString("N\r\n");
       state = IDLE;
     }
   }
