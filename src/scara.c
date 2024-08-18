@@ -17,8 +17,6 @@ Stepper stepper;
 volatile enum {IDLE, RECEIVING, MOVING, DONE} state = IDLE;
 static volatile int8_t* currentMotor = &stepper.motorA;
 
-void setup (void);    // initialize utility functions
-
 ISR (TIMER1_COMPA_vect)
 {
   // 16-bit interrupt for stepper motors
@@ -31,7 +29,7 @@ ISR (TIMER1_COMPA_vect)
 
 ISR (USART_RX_vect)
 {
-  // USART interrupt to receive stepper motor data array
+  // USART interrupt to receive stepper motor data 
   uint8_t receivedByte = UDR0;
 
   switch (state) {
@@ -71,7 +69,6 @@ ISR (USART_RX_vect)
 int main (void)
 {
   setup();
-  OCR1A = 1;
 
   while (1) {
     if (state == DONE) {
