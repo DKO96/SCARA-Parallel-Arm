@@ -11,11 +11,12 @@
 
 volatile uint8_t stepFlag = 0;
 volatile uint32_t totalSteps = 0;
+volatile uint16_t currentStep = 0;
 
 volatile uint8_t motorA[MAX_BUFFER];
 volatile uint8_t motorB[MAX_BUFFER];
 volatile uint16_t bIndex = 0;
-volatile enum {IDLE, RECEIVING, MOVING} state = IDLE;
+volatile enum {IDLE, RECEIVING, MOVING, DONE} state = IDLE;
 static volatile uint8_t* currentMotor = motorA;
 
 void setup (void);    // initialize utility functions
@@ -23,7 +24,14 @@ void setup (void);    // initialize utility functions
 ISR (TIMER1_COMPA_vect)
 {
   // 16-bit interrupt for stepper motors
-  if (state == MOVING) stepFlag = 1;
+  if (state == MOVING && currentStep < totalSteps) {
+    stepMotor(motorA[currentStep], A_DIR, A_STEP);
+    stepMotor(motorB[currentStep], B_DIR, B_STEP);
+    currentStep++;
+  } else if (currentStep >= totalSteps) {
+    state = DONE;
+    currentStep = 0;
+  }
 }
 
 ISR (USART_RX_vect)
@@ -70,27 +78,13 @@ ISR (USART_RX_vect)
 int main (void)
 {
   setup();
-  OCR1A = 6250;
+  OCR1A = 10;
 
   while (1) {
-    if (state != MOVING || !stepFlag) {
-      continue;
+    if (state == DONE) {
+      printString("DONE\r\n");
+      state = IDLE;
     }
-
-    // move stepper motors
-    stepFlag = 0;
-
-    for (uint16_t i = 0; i < totalSteps/2; i++) {
-      stepMotor(motorA[i], A_DIR, A_STEP);
-      _delay_us(100);
-      stepMotor(motorB[i], B_DIR, B_STEP);
-      _delay_us(100);
-    }
-
-    //printString("\r\n");
-    //_delay_ms(100);
-    printString("DONE\r\n");
-    state = IDLE;
   }
 
   return 0;
