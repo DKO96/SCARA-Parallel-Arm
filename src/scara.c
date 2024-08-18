@@ -5,9 +5,9 @@
 #include "utils.h"
 
 #define MAX_BUFFER 512
-#define SMARKER_A 0xBE
-#define SMARKER_B 0xC0
-#define EMARKER_B 0xDE
+#define STAMARKER 0xBE
+#define MIDMARKER 0xC0
+#define ENDMARKER 0xDE
 
 volatile uint8_t stepFlag = 0;
 volatile uint32_t totalSteps = 0;
@@ -29,12 +29,11 @@ ISR (TIMER1_COMPA_vect)
 ISR (USART_RX_vect)
 {
   // USART interrupt to receive stepper motor data array
-  // read USART byte data
   uint8_t receivedByte = UDR0;
 
   switch (state) {
     case IDLE:
-      if (receivedByte == SMARKER_A) {
+      if (receivedByte == STAMARKER) {
         bIndex = 0;
         state = RECEIVING;
         currentMotor = motorA;
@@ -43,11 +42,11 @@ ISR (USART_RX_vect)
       break;
 
     case RECEIVING:
-      if (receivedByte == SMARKER_B) {
+      if (receivedByte == MIDMARKER) {
         bIndex = 0;
         currentMotor = motorB;
 
-      } else if (receivedByte == EMARKER_B && currentMotor == motorB) {
+      } else if (receivedByte == ENDMARKER) {
         totalSteps = bIndex;
         state = MOVING;
         TIMSK1 |= (1 << OCIE1A);        // enable 16-bit timer interrupt
@@ -71,7 +70,7 @@ ISR (USART_RX_vect)
 int main (void)
 {
   setup();
-  OCR1A = 50;
+  OCR1A = 6250;
 
   while (1) {
     if (state != MOVING || !stepFlag) {
@@ -82,18 +81,14 @@ int main (void)
     stepFlag = 0;
 
     for (uint16_t i = 0; i < totalSteps/2; i++) {
-      printInteger(motorA[i]);
-      printString(" ");
-    }
-    printString("\r\n");
-
-    for (uint16_t i = 0; i < totalSteps/2; i++) {
-      printInteger(motorB[i]);
-      printString(" ");
+      stepMotor(motorA[i], A_DIR, A_STEP);
+      _delay_us(100);
+      stepMotor(motorB[i], B_DIR, B_STEP);
+      _delay_us(100);
     }
 
-    printString("\r\n");
-    _delay_ms(100);
+    //printString("\r\n");
+    //_delay_ms(100);
     printString("DONE\r\n");
     state = IDLE;
   }
@@ -102,13 +97,6 @@ int main (void)
 }
 
 
-void setup(void)
-{
-  initUSART();
-  initTimer1();
-  initStepper();
-  sei();
-}
 
 
 

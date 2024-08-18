@@ -7,12 +7,13 @@ def main():
   mapping = {-1:b'01', 0:b'00', 1:b'10'}
 
   # motor A
-  #array1 = np.full(600, -1)
-  array1 = np.array([-1, 0, 1, 0])
+  array1 = np.full(200, -1)
+  #array1 = np.array([-1, 0, 1, 0])
   byteArray1 = b'\xBE' + b''.join(mapping[x] for x in array1)
 
   # motor B
-  array2 = np.array([-1, 0, 1, 0])
+  array2 = np.full(200, -1)
+  #array2 = np.array([-1, 0, 1, 0])
   byteArray2 = b'\xC0' + b''.join(mapping[x] for x in array2) + b'\xDE'
 
   output = byteArray1 + byteArray2
@@ -31,7 +32,7 @@ def main():
       if "DONE" in response:
         break
 
-    time.sleep(2)
+    time.sleep(5)
 
   ser.close()
 

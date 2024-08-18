@@ -19,6 +19,9 @@ void initTimer0(void);
 void initStepper(void);
 void stepMotor(int8_t direction, uint8_t dirPin, uint8_t stepPin);
 
+
+void setup(void);
+
 #endif 
 
 

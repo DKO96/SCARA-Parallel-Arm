@@ -1,5 +1,7 @@
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
+#include "USART.h"
 #include "utils.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +42,17 @@ void stepMotor(int8_t direction, uint8_t dirPin, uint8_t stepPin)
   PORTD &= ~(1 << stepPin);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// Setup Functions
+////////////////////////////////////////////////////////////////////////////////
+void setup(void)
+{
+  initUSART();
+  initTimer1();
+  initStepper();
+  sei();
+}
 
 
 
