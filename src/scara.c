@@ -4,33 +4,28 @@
 #include "USART.h"
 #include "utils.h"
 
-#define MAX_BUFFER 512
 #define STAMARKER 0xBE
 #define MIDMARKER 0xC0
 #define ENDMARKER 0xDE
 
-volatile uint8_t stepFlag = 0;
-volatile uint32_t totalSteps = 0;
-volatile uint16_t currentStep = 0;
+typedef struct{
+  volatile int8_t motorA;
+  volatile int8_t motorB;
+} Stepper;
+Stepper stepper;
 
-volatile uint8_t motorA[MAX_BUFFER];
-volatile uint8_t motorB[MAX_BUFFER];
-volatile uint16_t bIndex = 0;
 volatile enum {IDLE, RECEIVING, MOVING, DONE} state = IDLE;
-static volatile uint8_t* currentMotor = motorA;
+static volatile int8_t* currentMotor = &stepper.motorA;
 
 void setup (void);    // initialize utility functions
 
 ISR (TIMER1_COMPA_vect)
 {
   // 16-bit interrupt for stepper motors
-  if (state == MOVING && currentStep < totalSteps) {
-    stepMotor(motorA[currentStep], A_DIR, A_STEP);
-    stepMotor(motorB[currentStep], B_DIR, B_STEP);
-    currentStep++;
-  } else if (currentStep >= totalSteps) {
+  if (state == MOVING) {
+    stepMotor(stepper.motorA, A_DIR, A_STEP);
+    stepMotor(stepper.motorB, B_DIR, B_STEP);
     state = DONE;
-    currentStep = 0;
   }
 }
 
@@ -42,30 +37,28 @@ ISR (USART_RX_vect)
   switch (state) {
     case IDLE:
       if (receivedByte == STAMARKER) {
-        bIndex = 0;
         state = RECEIVING;
-        currentMotor = motorA;
+        currentMotor = &stepper.motorA;
         TIMSK1 &= ~(1 << OCIE1A);       // disable 16-bit timer interrupt
       }
       break;
 
     case RECEIVING:
       if (receivedByte == MIDMARKER) {
-        bIndex = 0;
-        currentMotor = motorB;
+        currentMotor = &stepper.motorB;
 
       } else if (receivedByte == ENDMARKER) {
-        totalSteps = bIndex;
         state = MOVING;
         TIMSK1 |= (1 << OCIE1A);        // enable 16-bit timer interrupt
 
-      } else if (bIndex < MAX_BUFFER) {
-        if (bIndex % 2 == 0) {
-          currentMotor[bIndex/2] = (receivedByte - '0') << 1;
-        } else {
-          currentMotor[bIndex/2] |= (receivedByte - '0');
+      } else { 
+        if (receivedByte == 0x01) {
+          *currentMotor = -1;
+        } else if (receivedByte == 0x00) {
+          *currentMotor = 0;
+        } else if (receivedByte == 0x10) {
+          *currentMotor = 1;
         }
-        bIndex++;
       }
       break;
 
@@ -78,7 +71,7 @@ ISR (USART_RX_vect)
 int main (void)
 {
   setup();
-  OCR1A = 10;
+  OCR1A = 1;
 
   while (1) {
     if (state == DONE) {
