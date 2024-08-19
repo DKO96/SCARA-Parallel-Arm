@@ -24,8 +24,6 @@ def main():
   outputA = np.sign(np.diff(stepsA)).astype(int)
   outputB = np.sign(np.diff(stepsB)).astype(int)
 
-  print(f"outputA: \n{len(outputA)} \noutputB: \n{len(outputB)}")
-
   # map output
   mapping = {-1:b'\x01', 0:b'\x11', 1:b'\x10'}
   bytesA = np.array([mapping[x] for x in outputA])
@@ -33,26 +31,20 @@ def main():
 
   # initiate serial 
   ser = serial.Serial('/dev/ttyUSB0', 38400, timeout=1)
-  time.sleep(1)
+  time.sleep(2)
+  ser.reset_input_buffer()
   
-  count = 0
   for i in range(len(outputA)):
     sending = b'\xBE' + bytesA[i] + b'\xC0' + bytesB[i] + b'\xDE'
-    #print(sending)
     ser.write(sending)
     ser.flush()
 
-    while ser.in_waiting:
-      response = ser.readline().decode('ascii', errors='ignore').strip()
-      if "N" in response:
-        count += 1
-        break
-      time.sleep(0.01)
+    while True:
+      if ser.in_waiting:
+        response = ser.readline().decode('ascii', errors='ignore').strip()
+        if "N" in response:
+          break
 
-    time.sleep(0.01)
-
-
-  print(count)
 
 if __name__ == "__main__":
   main()

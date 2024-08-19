@@ -20,9 +20,8 @@
 #define ANGLE_H 0x0E 
 
 #define ANGLE_MAX 4096
-#define OFFSET_A 3604
-#define OFFSET_B 317
-#define TOL 2
+#define OFFSET_A 540
+#define OFFSET_B 1302
 
 #define NEG(PIN) ((PORTD) |= (1 << (PIN))) 
 #define POS(PIN) ((PORTD) &= ~(1 << (PIN)))
