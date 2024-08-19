@@ -12,7 +12,7 @@ class Simulation:
     self.baseA = np.array([0, 0])
     self.baseB = np.array([D, 0])
 
-  def plotMovement(self, start, end):
+  def plotTrajectory(self, start, end):
     c = ["go-", "bo-"]
     p = [start, end]
     l = ["start", "end"]
@@ -128,8 +128,10 @@ class Simulation:
 def main():
   s = Simulation(120, 200, 118)
 
-  start_coord = np.array([59, 311])
-  end_coord = np.array([-50, 200])
+  #start_coord = np.array([59, 311])
+  #end_coord = np.array([-50, 200])
+  start_coord = np.array([-50, 200])
+  end_coord = np.array([168, 200])
 
   s1, s2 = ik.inverseKinematics(start_coord[0], start_coord[1], s.L1, s.L2, s.D)
   e1, e2 = ik.inverseKinematics(end_coord[0], end_coord[1], s.L1, s.L2, s.D)
@@ -140,7 +142,7 @@ def main():
   # plot manipulator movement
   start = (s1, s2, start_coord)
   end = (e1, e2, end_coord)
-  s.plotMovement(start, end)
+  s.plotTrajectory(start, end)
 
   # run animation
   motorA = angles[:,0]
