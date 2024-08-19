@@ -20,8 +20,8 @@
 #define ANGLE_H 0x0E 
 
 #define ANGLE_MAX 4096
-#define OFFSET_A 2583
-#define OFFSET_B 3370
+#define OFFSET_A 3604
+#define OFFSET_B 317
 #define TOL 2
 
 #define NEG(PIN) ((PORTD) |= (1 << (PIN))) 
@@ -48,6 +48,9 @@ uint16_t offsetAngle_B(uint16_t *raw_angle);
 int16_t wrapAngle(int16_t error);
 
 void setup(void);
+void initScara(void);
+void moveStart(int16_t error, uint8_t dirPin, uint8_t stepPin);
+int16_t abs(int16_t x);
 
 #endif 
 

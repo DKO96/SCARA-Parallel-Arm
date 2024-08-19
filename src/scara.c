@@ -11,18 +11,18 @@
 typedef struct{
   volatile int8_t motorA;
   volatile int8_t motorB;
-} Stepper;
-Stepper stepper;
+} Scara;
+Scara scara;
 
 volatile enum {IDLE, RECEIVING, MOVING, DONE} state = IDLE;
-static volatile int8_t* currentMotor = &stepper.motorA;
+static volatile int8_t* currentMotor = &scara.motorA;
 
 ISR (TIMER1_COMPA_vect)
 {
   // 16-bit interrupt for stepper motors
   if (state == MOVING) {
-    stepMotor(stepper.motorA, A_DIR, A_STEP);
-    stepMotor(stepper.motorB, B_DIR, B_STEP);
+    stepMotor(scara.motorA, A_DIR, A_STEP);
+    stepMotor(scara.motorB, B_DIR, B_STEP);
     state = DONE;
   }
 }
@@ -36,14 +36,14 @@ ISR (USART_RX_vect)
     case IDLE:
       if (receivedByte == STAMARKER) {
         state = RECEIVING;
-        currentMotor = &stepper.motorA;
+        currentMotor = &scara.motorA;
         TIMSK1 &= ~(1 << OCIE1A);       // disable 16-bit timer interrupt
       }
       break;
 
     case RECEIVING:
       if (receivedByte == MIDMARKER) {
-        currentMotor = &stepper.motorB;
+        currentMotor = &scara.motorB;
 
       } else if (receivedByte == ENDMARKER) {
         state = MOVING;
@@ -69,6 +69,7 @@ ISR (USART_RX_vect)
 int main (void)
 {
   setup();
+  initScara();
 
   while (1) {
     if (state == DONE) {

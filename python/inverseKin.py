@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def inverseKinematics(x, y, L1, L2, D):
   r1 = np.sqrt(x**2 + y**2)
@@ -50,3 +51,39 @@ def stepAngles(angles, stepsize):
       q2_adjusted.append(q2)
 
   return np.vstack((q1_adjusted, q2_adjusted)).T
+
+def intersection(center1, center2, radius):
+  d = np.linalg.norm(center2 - center1)
+
+  a = d / 2
+  h = math.sqrt(radius**2 - a**2)
+
+  x0 = center1[0] + a * (center2[0] - center1[0]) / d
+  y0 = center1[1] + a * (center2[1] - center1[1]) / d
+
+  rx = -(center2[1] - center1[1]) * (h / d)
+  ry = (center2[0] - center1[0]) * (h / d)
+
+  xi = x0 + rx
+  yi = y0 + ry
+
+  return np.array([xi, yi])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

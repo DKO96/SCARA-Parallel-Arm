@@ -12,8 +12,8 @@ class Simulation:
     self.baseA = np.array([0, 0])
     self.baseB = np.array([D, 0])
 
-  def plotScara(self, start, end):
-    c = ["bo-", "go-"]
+  def plotMovement(self, start, end):
+    c = ["go-", "bo-"]
     p = [start, end]
     l = ["start", "end"]
     a = [0.3, 1]
@@ -57,6 +57,7 @@ class Simulation:
       # get position of stepper arms
       jointA = np.array([self.L1*np.cos(ang[i][0]), self.L1*np.sin(ang[i][0])])
       jointB = np.array([self.D + self.L1*np.cos(ang[i][1]), self.L1*np.sin(ang[i][1])])
+      effector = ik.intersection(jointA, jointB, self.L2)
 
       # plot stepper arms
       plt.plot([self.baseA[0], jointA[0]], [self.baseA[1], jointA[1]], 'go-', linewidth=4)
@@ -67,16 +68,16 @@ class Simulation:
       
       # plot possible end-effector position
       circleA = patches.Circle((jointA), 200, edgecolor='green', 
-                               facecolor='none', linewidth=2, alpha=0.5)
+                               facecolor='none', linewidth=2, alpha=0.3)
       plt.gca().add_patch(circleA)
 
       circleB = patches.Circle((jointB), 200, edgecolor='blue', 
-                               facecolor='none', linewidth=2, alpha=0.5)
+                               facecolor='none', linewidth=2, alpha=0.3)
       plt.gca().add_patch(circleB)
 
       # plot end-effector position
-      #plt.plot([jointA[0], traj[i][0]], [jointA[1], traj[i][1]], 'go-', linewidth=4)
-      #plt.plot([jointB[0], traj[i][0]], [jointB[1], traj[i][1]], 'bo-', linewidth=4)
+      plt.plot([jointA[0], effector[0]], [jointA[1], effector[1]], 'go-', linewidth=4)
+      plt.plot([jointB[0], effector[0]], [jointB[1], effector[1]], 'bo-', linewidth=4)
 
       plt.title(f'SCARA Robot Configuration')
       plt.xlabel('x-axis')
@@ -89,12 +90,46 @@ class Simulation:
 
     plt.show()
 
+  def plotScara(self, angleA, angleB):
+    plt.figure(figsize=(12,10))
+
+    # get position of stepper arms
+    jointA = np.array([self.L1*np.cos(angleA), self.L1*np.sin(angleA)])
+    jointB = np.array([self.D + self.L1*np.cos(angleB), self.L1*np.sin(angleB)])
+    effector = ik.intersection(jointA, jointB, self.L2)
+    print(f"End-effector: {effector[0]}, {effector[1]}")
+
+    # plot stepper arms
+    plt.plot([self.baseA[0], jointA[0]], [self.baseA[1], jointA[1]], 'go-', linewidth=4)
+    plt.plot([self.baseB[0], jointB[0]], [self.baseB[1], jointB[1]], 'bo-', linewidth=4)
+
+    # plot possible end-effector position
+    circleA = patches.Circle((jointA), 200, edgecolor='green', 
+                             facecolor='none', linewidth=2, alpha=0.3)
+    plt.gca().add_patch(circleA)
+
+    circleB = patches.Circle((jointB), 200, edgecolor='blue', 
+                             facecolor='none', linewidth=2, alpha=0.3)
+    plt.gca().add_patch(circleB)
+
+    # plot end-effector position
+    plt.plot([jointA[0], effector[0]], [jointA[1], effector[1]], 'go-', linewidth=4)
+    plt.plot([jointB[0], effector[0]], [jointB[1], effector[1]], 'bo-', linewidth=4)
+
+    plt.title(f'SCARA Robot Configuration')
+    plt.xlabel('x-axis')
+    plt.ylabel('y-axis')
+    plt.xlim([-142, 260])
+    plt.ylim([-71, 331])
+    plt.grid(True)
+    plt.show()
+
 
 def main():
   s = Simulation(120, 200, 118)
 
-  start_coord = np.array([-41, 180])
-  end_coord = np.array([159, 100])
+  start_coord = np.array([59, 311])
+  end_coord = np.array([-50, 200])
 
   s1, s2 = ik.inverseKinematics(start_coord[0], start_coord[1], s.L1, s.L2, s.D)
   e1, e2 = ik.inverseKinematics(end_coord[0], end_coord[1], s.L1, s.L2, s.D)
@@ -102,35 +137,28 @@ def main():
   # create trajectory
   trajectory, angles = ik.lineTrajectory(start_coord, end_coord, s.L1, s.L2, s.D)
 
-  # plot manipulator position
+  # plot manipulator movement
   start = (s1, s2, start_coord)
   end = (e1, e2, end_coord)
-  s.plotScara(start, end)
+  s.plotMovement(start, end)
 
   # run animation
   motorA = angles[:,0]
   motorB = angles[:,1]
-  #print(f"motorA: \n{motorA}\n")
-  #print(f"motorB: \n{motorB}\n")
 
   STEPSIZE = 0.003926991
   steps = ik.stepAngles(angles, STEPSIZE)
   stepsA = steps[:,0]
   stepsB = steps[:,1]
-  #print(f"stepsA: \n{stepsA}\n")
-  #print(f"stepsB: \n{stepsB}\n")
 
-  diffStepsA = np.diff(stepsA)
-  diffStepsB = np.diff(stepsB)
-  #print(f"diffStepsA: \n{diffStepsA}\n")
-  #print(f"diffStepsB: \n{diffStepsB}\n")
-
-  outputA = np.sign(diffStepsA)
-  outputB = np.sign(diffStepsB)
-  print(f"outputA: \n{len(outputA)}\n")
-  print(f"outputB: \n{len(outputB)}\n")
-
+  outputA = np.sign(np.diff(stepsA))
+  outputB = np.sign(np.diff(stepsB))
   s.animation(trajectory, steps)
+
+  # plot end-effector position
+  #s.plotScara(1.570796, 1.570796)
+
+
 
 
 if __name__ == "__main__":

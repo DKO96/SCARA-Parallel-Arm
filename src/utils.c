@@ -12,7 +12,7 @@ void initTimer1(void)
   TCCR1A = 0x00;
   TCCR1B = (1 << WGM12) | (1 << CS12);
   TIMSK1 = (1 << OCIE1A);
-  OCR1A = 10;
+  OCR1A = 1;
 }
 
 
@@ -99,6 +99,7 @@ void channel(uint8_t bus)
   _delay_us(5);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 /// AS5600 Functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,18 +138,60 @@ int16_t wrapAngle(int16_t error)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Setup Functions
+/// Functions
 ////////////////////////////////////////////////////////////////////////////////
 void setup(void)
 {
   initUSART();
   initTimer1();
   initStepper();
+  initI2C();
   sei();
 }
 
+void initScara(void)
+{
+  typedef struct {
+    uint8_t upperA, lowerA, upperB, lowerB;
+    uint16_t rawA, rawB, measA, measB;
+    int16_t errA, errB;
+  } Stepper;
+  Stepper stepper;
 
+  uint16_t setA = 1024;
+  uint16_t setB = 1024;
 
+  channel(CHANNEL_A);
+  readAngle(&stepper.upperA, &stepper.lowerA, &stepper.rawA);
+  stepper.measA = offsetAngle_A(&stepper.rawA);
+  stepper.errA = wrapAngle(setA - stepper.measA);
+
+  channel(CHANNEL_B);
+  readAngle(&stepper.upperB, &stepper.lowerB, &stepper.rawB);
+  stepper.measB = offsetAngle_B(&stepper.rawB);
+  stepper.errB = wrapAngle(setB - stepper.measB);
+
+  moveStart(stepper.errA, A_DIR, A_STEP);
+  moveStart(stepper.errB, B_DIR, B_STEP);
+}
+
+void moveStart(int16_t error, uint8_t dirPin, uint8_t stepPin) 
+{
+  int16_t steps = ((int32_t)error * 1600) / 4096 ;
+  int16_t total = abs(steps);
+  int8_t dir = (steps > 0) ? 1 : -1;
+
+  for (uint16_t i = 0; i < total; i++) {
+    stepMotor(dir, dirPin, stepPin);
+    _delay_ms(1);
+  }
+}
+
+int16_t abs(int16_t x)
+{
+  int16_t val = x > 0 ? x : -x;
+  return val;
+}
 
 
 
