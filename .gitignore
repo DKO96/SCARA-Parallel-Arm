@@ -1,1 +1,8 @@
 .scara-env/
+
+src/scara
+src/scara.hex
+src/scara.o
+src/USART.o
+src/utils.o
+
