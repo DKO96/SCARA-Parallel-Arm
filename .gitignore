@@ -1,4 +1,5 @@
 .scara-env/
+Research/
 
 src/scara
 src/scara.hex
@@ -7,4 +8,3 @@ src/USART.o
 src/utils.o
 
 python/__pycache__/
-
