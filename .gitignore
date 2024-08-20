@@ -6,3 +6,5 @@ src/scara.o
 src/USART.o
 src/utils.o
 
+python/__pycache__/
+
