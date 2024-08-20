@@ -12,7 +12,7 @@ class Simulation:
     self.baseA = np.array([0, 0])
     self.baseB = np.array([D, 0])
 
-  def plotTrajectory(self, start, end):
+  def plotPath(self, start, end):
     c = ["go-", "bo-"]
     p = [start, end]
     l = ["start", "end"]
@@ -130,19 +130,21 @@ def main():
 
   #start_coord = np.array([59, 311])
   #end_coord = np.array([-50, 200])
-  start_coord = np.array([-50, 200])
+  start_coord = np.array([59, 138])
   end_coord = np.array([168, 200])
 
-  s1, s2 = ik.inverseKinematics(start_coord[0], start_coord[1], s.L1, s.L2, s.D)
-  e1, e2 = ik.inverseKinematics(end_coord[0], end_coord[1], s.L1, s.L2, s.D)
+  # move end-effector in a line
+  #s1, s2 = ik.inverseKinematics(start_coord[0], start_coord[1], s.L1, s.L2, s.D)
+  #e1, e2 = ik.inverseKinematics(end_coord[0], end_coord[1], s.L1, s.L2, s.D)
 
-  # create trajectory
-  trajectory, angles = ik.lineTrajectory(start_coord, end_coord, s.L1, s.L2, s.D)
+  ## create trajectory
+  #trajectory, angles = ik.lineTrajectory(start_coord, end_coord, s.L1, s.L2, s.D)
+  trajectory, angles = ik.circleTrajectory(start_coord, 58, 3*np.pi/2, s.L1, s.L2, s.D)
 
-  # plot manipulator movement
-  start = (s1, s2, start_coord)
-  end = (e1, e2, end_coord)
-  s.plotTrajectory(start, end)
+  ## plot manipulator movement
+  #start = (s1, s2, start_coord)
+  #end = (e1, e2, end_coord)
+  #s.plotPath(start, end)
 
   # run animation
   motorA = angles[:,0]
@@ -161,7 +163,24 @@ def main():
   #s.plotScara(1.570796, 1.570796)
 
 
-
-
 if __name__ == "__main__":
   main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

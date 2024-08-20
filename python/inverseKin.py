@@ -14,6 +14,7 @@ def inverseKinematics(x, y, L1, L2, D):
 
   return q1, q2
 
+
 def lineTrajectory(start, end, L1, L2, D):
   N = int(np.linalg.norm(start - end))*100
   xl = np.linspace(start[0], end[0], N)
@@ -25,6 +26,26 @@ def lineTrajectory(start, end, L1, L2, D):
   angles = np.vstack((q1, q2)).T
 
   return trajectory, angles
+
+
+def circleTrajectory(start, r, angle, L1, L2, D):
+  N = int(2 * np.pi * r)*10
+  xc = start[0] - r * np.cos(angle)
+  yc = start[1] - r * np.sin(angle)
+
+  waypoints = []
+  for i in np.linspace(0, 2*np.pi, N, endpoint=True):
+    x = xc + r * np.cos(i + angle)
+    y = yc + r * np.sin(i + angle)
+    waypoints.append([x, y])
+
+  trajectory = np.vstack(waypoints)
+
+  q1, q2 = inverseKinematics(trajectory[:,0], trajectory[:,1], L1, L2, D)
+  angles = np.vstack((q1, q2)).T
+
+  return trajectory, angles
+
 
 def stepAngles(angles, stepsize):
   q1_adjusted = [angles[0, 0]]
@@ -51,6 +72,7 @@ def stepAngles(angles, stepsize):
       q2_adjusted.append(q2)
 
   return np.vstack((q1_adjusted, q2_adjusted)).T
+
 
 def intersection(center1, center2, radius):
   d = np.linalg.norm(center2 - center1)

@@ -41,8 +41,8 @@ def main():
   # waypoint coordinates
   waypoints = np.array([
     [59, 311], 
-    [-50, 200], 
-    [168, 200],
+    [-41, 138], 
+    [159, 138],
     [59, 311], 
   ])
 
