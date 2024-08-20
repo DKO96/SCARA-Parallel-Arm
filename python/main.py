@@ -12,7 +12,7 @@ class Scara:
     self.stepsize = stepsize
     self.mapping = {-1:b'\x01', 0:b'\x11', 1:b'\x10'}
 
-  def getCommands(self, waypoints):
+  def drawLine(self, waypoints):
     trajectory = []
     for i in range(1, len(waypoints)):
       # create trajectory
@@ -20,20 +20,35 @@ class Scara:
 
       # get steps
       steps = ik.stepAngles(angles, self.stepsize)
-      stepsA = steps[:,0]
-      stepsB = steps[:,1]
-
-      outputA = np.sign(np.diff(stepsA)).astype(int)
-      outputB = np.sign(np.diff(stepsB)).astype(int)
+      stepsA = np.sign(np.diff(steps[:,0])).astype(int)
+      stepsB = np.sign(np.diff(steps[:,1])).astype(int)
 
       # map output
-      bytesA = np.array([self.mapping[x] for x in outputA])
-      bytesB = np.array([self.mapping[x] for x in outputB])
+      bytesA = np.array([self.mapping[x] for x in stepsA])
+      bytesB = np.array([self.mapping[x] for x in stepsB])
 
       commands = np.vstack((bytesA, bytesB)).T
       trajectory.append(commands)
 
     return np.vstack(trajectory)
+
+  def drawCircle(self, trajectory, start, r, angle):
+    circle, angles = ik.circleTrajectory(start, r, angle, self.L1, self.L2, self.D)
+
+    # get steps
+    steps = ik.stepAngles(angles, self.stepsize)
+    stepsA = np.sign(np.diff(steps[:,0])).astype(int)
+    stepsB = np.sign(np.diff(steps[:,1])).astype(int)
+
+    # map output
+    bytesA = np.array([self.mapping[x] for x in stepsA])
+    bytesB = np.array([self.mapping[x] for x in stepsB])
+
+    commands = np.vstack((bytesA, bytesB)).T
+    trajectory = np.vstack((trajectory, commands))
+
+    return trajectory
+
 
 def main():
   s = Scara(120, 200, 118, 0.003926991)
@@ -44,9 +59,15 @@ def main():
     [-41, 138], 
     [159, 138],
     [59, 311], 
+    [59, 138], 
   ])
 
-  trajectory = s.getCommands(waypoints)
+  trajectory = s.drawLine(waypoints)
+
+  start = np.array([59, 138])
+  r = 58
+  angle = 3*np.pi/2
+  trajectory = s.drawCircle(trajectory, start, r, angle)
 
   # initiate serial 
   ser = serial.Serial('/dev/ttyUSB0', 38400, timeout=1)

@@ -29,7 +29,7 @@ def lineTrajectory(start, end, L1, L2, D):
 
 
 def circleTrajectory(start, r, angle, L1, L2, D):
-  N = int(2 * np.pi * r)*10
+  N = int(2 * np.pi * r)*100
   xc = start[0] - r * np.cos(angle)
   yc = start[1] - r * np.sin(angle)
 
