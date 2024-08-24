@@ -5,29 +5,47 @@
 #include "utils.h"
 
 #define STAMARKER 0xBE
-#define MIDMARKER 0xC0
+#define PENUP 0xC0
+#define PENDOWN 0xC1
 #define ENDMARKER 0xDE
 
 typedef struct{
-  volatile int8_t motorA;
-  volatile int8_t motorB;
-} Scara;
-Scara scara;
+  volatile int8_t stepperA;
+  volatile int8_t stepperB;
+  volatile uint8_t servo;
+} Motor;
+Motor motor;
 
 volatile enum {IDLE, RECEIVING, MOVING, DONE} state = IDLE;
-static volatile int8_t* currentMotor = &scara.motorA;
+static volatile int8_t* currentMotor = &motor.stepperA;
 
-ISR (TIMER1_COMPA_vect)
+ISR(TIMER1_COMPA_vect)
 {
   // 16-bit interrupt for stepper motors
   if (state == MOVING) {
-    stepMotor(scara.motorA, A_DIR, A_STEP);
-    stepMotor(scara.motorB, B_DIR, B_STEP);
+    stepMotor(motor.stepperA, A_DIR, A_STEP);
+    stepMotor(motor.stepperB, B_DIR, B_STEP);
     state = DONE;
   }
 }
 
-ISR (USART_RX_vect)
+ISR(TIMER2_COMPA_vect)
+{
+  static uint16_t counter = 0;
+
+  if (counter < motor.servo) {
+    PORTB |= (1 << PB3);
+  } else {
+    PORTB &= ~(1 << PB3);
+  }
+  counter++;
+
+  if (counter >= 160) {
+    counter = 0;
+  }
+}
+
+ISR(USART_RX_vect)
 {
   // USART interrupt to receive stepper motor data 
   uint8_t receivedByte = UDR0;
@@ -36,14 +54,20 @@ ISR (USART_RX_vect)
     case IDLE:
       if (receivedByte == STAMARKER) {
         state = RECEIVING;
-        currentMotor = &scara.motorA;
+        currentMotor = &motor.stepperA;
         TIMSK1 &= ~(1 << OCIE1A);       // disable 16-bit timer interrupt
       }
       break;
 
     case RECEIVING:
-      if (receivedByte == MIDMARKER) {
-        currentMotor = &scara.motorB;
+      if (receivedByte == PENUP || receivedByte == PENDOWN) {
+        currentMotor = &motor.stepperB;
+        
+        if (receivedByte == PENUP) {
+          motor.servo = 19;
+        } else {
+          motor.servo = 4;
+        }
 
       } else if (receivedByte == ENDMARKER) {
         state = MOVING;
@@ -66,7 +90,7 @@ ISR (USART_RX_vect)
 }
 
 
-int main (void)
+int main(void)
 {
   setup();
   initScara();

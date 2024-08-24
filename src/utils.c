@@ -12,20 +12,31 @@ void initTimer1(void)
   TCCR1A = 0x00;
   TCCR1B = (1 << WGM12) | (1 << CS12);
   TIMSK1 = (1 << OCIE1A);
-  OCR1A = 1;
+  OCR1A = 100;
 }
 
+void initTimer2(void)
+{
+  TCCR2A = (1 << WGM21);
+  TCCR2B = (1 << CS21);
+  TIMSK2 = (1 << OCIE2A);
+  OCR2A = 249;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// TMC2209 Functions
 ////////////////////////////////////////////////////////////////////////////////
-void initStepper(void)
+void initMotors(void)
 {
+  // initialize stepper motors
   DDRD |= (1 << A_STEP) | (1 << A_DIR) | (1 << A_ENABLE);
   PORTD &= ~(1 << A_ENABLE);
 
   DDRD |= (1 << B_STEP) | (1 << B_DIR) | (1 << B_ENABLE);
   PORTD &= ~(1 << B_ENABLE);
+
+  // initialize servo motor
+  DDRB |= (1 << PB3);
 }
 
 void stepMotor(int8_t direction, uint8_t dirPin, uint8_t stepPin)
@@ -144,7 +155,8 @@ void setup(void)
 {
   initUSART();
   initTimer1();
-  initStepper();
+  initTimer2();
+  initMotors();
   initI2C();
   sei();
 }

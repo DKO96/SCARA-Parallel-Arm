@@ -3,11 +3,11 @@ import numpy as np
 import serial
 import inverseKin as ik
 from simulation import Simulation
-from scara import deathlyHallows
+from scara import deathlyHallows, lineTest
 
 def main():
   # run example
-  trajectory = deathlyHallows()
+  trajectory = lineTest()
 
   # initiate serial 
   ser = serial.Serial('/dev/ttyUSB0', 38400, timeout=1)
@@ -15,7 +15,9 @@ def main():
   ser.reset_input_buffer()
   
   for i in range(len(trajectory)):
-    sending = b'\xBE' + trajectory[i, 0] + b'\xC0' + trajectory[i, 1] + b'\xDE'
+    sending = b'\xBE' + trajectory[i, 0] + trajectory[i, 2] + trajectory[i, 1] + b'\xDE'
+    #sending = b'\xBE' + trajectory[i, 0] + b'\xC0' + trajectory[i, 1] + b'\xDE'
+    print(sending)
     ser.write(sending)
     ser.flush()
 

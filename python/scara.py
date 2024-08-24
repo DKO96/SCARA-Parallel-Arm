@@ -38,7 +38,12 @@ class Scara:
       bytesA = np.array([self.mapping[x] for x in stepsA])
       bytesB = np.array([self.mapping[x] for x in stepsB])
 
-      commands = np.vstack((bytesA, bytesB)).T
+      if wp.pen == 'down':
+        bytesC = np.full(np.shape(bytesA), b'\xC1')
+      else:
+        bytesC = np.full(np.shape(bytesA), b'\xC0')
+
+      commands = np.vstack((bytesA, bytesB, bytesC)).T
       trajectory.append(commands)
 
     return np.vstack(trajectory)
@@ -52,9 +57,16 @@ def deathlyHallows():
     Waypoint(label='line', pen='down', start=[59, 310], end=[-41, 138]),
     Waypoint(label='line', pen='down', start=[-41, 138], end=[159, 138]),
     Waypoint(label='line', pen='down', start=[159, 138], end=[59, 310]),
-    Waypoint(label='line', pen='down', start=[59, 310], end=[59, 138]),
+    Waypoint(label='line', pen='up', start=[59, 310], end=[59, 138]),
     Waypoint(label='circle', pen='down', start=[59, 138], 
              radius=58, angle=3*np.pi/2, dir='ccw', arc=1),
+  ]
+  return Scara().getTrajectory(waypoints)
+
+def lineTest():
+  waypoints = [
+    Waypoint(label='line', pen='up', start=[59, 310], end=[59, 138]),
+    Waypoint(label='line', pen='down', start=[59, 138], end=[59, 310]),
   ]
   return Scara().getTrajectory(waypoints)
 

@@ -27,8 +27,9 @@
 #define POS(PIN) ((PORTD) &= ~(1 << (PIN)))
 
 void initTimer1(void);
+void initTimer2(void);
 
-void initStepper(void);
+void initMotors(void);
 void stepMotor(int8_t direction, uint8_t dirPin, uint8_t stepPin);
 
 void initI2C(void);
