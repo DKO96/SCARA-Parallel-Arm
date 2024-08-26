@@ -8,3 +8,4 @@ src/USART.o
 src/utils.o
 
 python/__pycache__/
+python/example.py

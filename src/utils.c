@@ -170,8 +170,8 @@ void initScara(void)
   } Stepper;
   Stepper stepper;
 
-  uint16_t setA = 1024;
-  uint16_t setB = 1024;
+  uint16_t setA = 2048;
+  uint16_t setB = 0;
 
   channel(CHANNEL_A);
   readAngle(&stepper.upperA, &stepper.lowerA, &stepper.rawA);
@@ -189,6 +189,7 @@ void initScara(void)
 
 void moveStart(int16_t error, uint8_t dirPin, uint8_t stepPin) 
 {
+  // initialize stepper motor position (starting position)
   int16_t steps = ((int32_t)error * 1600) / 4096 ;
   int16_t total = abs(steps);
   int8_t dir = (steps > 0) ? 1 : -1;

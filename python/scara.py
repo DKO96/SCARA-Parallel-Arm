@@ -63,13 +63,22 @@ def deathlyHallows():
   ]
   return Scara().getTrajectory(waypoints)
 
-def lineTest():
+def horizontal():
   waypoints = [
-    Waypoint(label='line', pen='up', start=[59, 310], end=[59, 138]),
-    Waypoint(label='line', pen='down', start=[59, 138], end=[59, 310]),
+    Waypoint(label='line', pen='up', start=[59, 89], end=[0, 100]),
+    Waypoint(label='line', pen='down', start=[0, 100], end=[118, 100]),
+    Waypoint(label='line', pen='up', start=[118, 100], end=[0, 110]),
+    Waypoint(label='line', pen='down', start=[0, 110], end=[118, 110]),
+    Waypoint(label='line', pen='up', start=[118, 110], end=[0, 120]),
+    Waypoint(label='line', pen='down', start=[0, 120], end=[118, 120]),
+    Waypoint(label='line', pen='up', start=[118, 120], end=[59, 89]),
   ]
   return Scara().getTrajectory(waypoints)
 
+def helloWorld():
+  waypoints = [
+  ]
+  return Scara().getTrajectory(waypoints)
 
 
 

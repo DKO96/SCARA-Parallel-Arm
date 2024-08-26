@@ -64,9 +64,9 @@ ISR(USART_RX_vect)
         currentMotor = &motor.stepperB;
         
         if (receivedByte == PENUP) {
-          motor.servo = 19;
+          motor.servo = 11;
         } else {
-          motor.servo = 4;
+          motor.servo = 8;
         }
 
       } else if (receivedByte == ENDMARKER) {
@@ -93,6 +93,7 @@ ISR(USART_RX_vect)
 int main(void)
 {
   setup();
+  motor.servo = 11;
   initScara();
 
   while (1) {
