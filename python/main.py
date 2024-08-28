@@ -7,7 +7,9 @@ import scara as ex
 
 def main():
   # run example
-  trajectory = ex.horizontal()
+  #trajectory = ex.deathlyHallows()
+  #trajectory = ex.horizontalLines()
+  trajectory = ex.helloWorld()
 
   # initiate serial 
   ser = serial.Serial('/dev/ttyUSB0', 38400, timeout=1)
