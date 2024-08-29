@@ -27,6 +27,8 @@ def main():
         if "N" in response:
           break
 
+    time.sleep(0.005)
+
 
 if __name__ == "__main__":
   main()
