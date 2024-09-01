@@ -15,6 +15,8 @@ class Waypoint:
     self.arc = arc
 
 class Scara:
+  penState = 'up'
+
   def __init__(self):
     self.L1 = 120
     self.L2 = 200
@@ -27,6 +29,16 @@ class Scara:
     plt.figure()
     
     for wp in waypoints:
+      if wp.pen != Scara.penState:
+        if wp.pen == 'down':
+          pause = np.full((50, 3), b'\x11', dtype='object')
+          pause[:, 2] = b'\xC0'
+        else:
+          pause = np.full((50, 3), b'\x11', dtype='object')
+          pause[:, 2] = b'\xC1'
+
+        trajectory.append(pause)
+
       if wp.label == 'line':
         path, angles = ik.lineTrajectory(wp.start, wp.end, self.L1, self.L2, self.D)
       elif wp.label == 'circle':
@@ -43,9 +55,11 @@ class Scara:
       if wp.pen == 'down':
         bytesC = np.full(np.shape(bytesA), b'\xC1')
         plt.plot(path[:,0], path[:,1], 'b-', linewidth=2)
+        Scara.penState = 'down'
       else:
         bytesC = np.full(np.shape(bytesA), b'\xC0')
         plt.plot(path[:,0], path[:,1], 'r-', linewidth=2, alpha=0.4)
+        Scara.penState = 'up'
 
       commands = np.vstack((bytesA, bytesB, bytesC)).T
       trajectory.append(commands)
@@ -81,6 +95,15 @@ def horizontalLines():
   ]
   return Scara().getTrajectory(waypoints)
 
+def circles():
+  waypoints = [
+    Waypoint(label='line', pen='up', start=[59, 89], end=[0, 150]),
+    Waypoint(label='circle', pen='down', start=[0, 150], 
+             radius=20, angle=0, dir='ccw', arc=1.1),
+    Waypoint(label='line', pen='up', start=[0, 150], end=[59, 89]),
+  ]
+  return Scara().getTrajectory(waypoints)
+
 def helloWorld():
   waypoints = [
     Waypoint(label='line', pen='up', start=[59, 89], end=[180, 110]),
@@ -110,40 +133,40 @@ def helloWorld():
 
     # o
     Waypoint(label='circle', pen='down', start=[90, 150], 
-             radius=10, angle=0, dir='ccw', arc=1),
+             radius=10, angle=0, dir='ccw', arc=1.1),
     Waypoint(label='line', pen='up', start=[90, 150], end=[50, 110]),
 
-    ## W
-    #Waypoint(label='line', pen='down', start=[50, 110], end=[40, 160]),
-    #Waypoint(label='line', pen='down', start=[40, 160], end=[30, 135]),
-    #Waypoint(label='line', pen='down', start=[30, 135], end=[20, 160]),
-    #Waypoint(label='line', pen='down', start=[20, 160], end=[10, 110]),
-    #Waypoint(label='line', pen='up', start=[10, 110], end=[0, 150]),
+    # W
+    Waypoint(label='line', pen='down', start=[50, 110], end=[40, 160]),
+    Waypoint(label='line', pen='down', start=[40, 160], end=[30, 135]),
+    Waypoint(label='line', pen='down', start=[30, 135], end=[20, 160]),
+    Waypoint(label='line', pen='down', start=[20, 160], end=[10, 110]),
+    Waypoint(label='line', pen='up', start=[10, 110], end=[0, 150]),
 
-    ## o
-    #Waypoint(label='circle', pen='down', start=[0, 150], 
-    #         radius=10, angle=0, dir='ccw', arc=1),
-    #Waypoint(label='line', pen='up', start=[0, 150], end=[-30, 140]),
+    # o
+    Waypoint(label='circle', pen='down', start=[0, 150], 
+             radius=10, angle=0, dir='ccw', arc=1.1),
+    Waypoint(label='line', pen='up', start=[0, 150], end=[-30, 138]),
 
-    ## r
-    #Waypoint(label='line', pen='down', start=[-30, 140], end=[-30, 160]),
-    #Waypoint(label='line', pen='up', start=[-30, 160], end=[-30, 150]),
-    #Waypoint(label='circle', pen='down', start=[-30, 150], 
-    #         radius=10, angle=0, dir='cw', arc=0.25),
-    #Waypoint(label='line', pen='up', start=[-40, 140], end=[-50, 110]),
+    # r
+    Waypoint(label='line', pen='down', start=[-30, 138], end=[-30, 155]),
+    Waypoint(label='line', pen='up', start=[-30, 155], end=[-28, 150]),
+    Waypoint(label='circle', pen='down', start=[-28, 150], 
+             radius=10, angle=0, dir='cw', arc=0.35),
+    Waypoint(label='line', pen='up', start=[-43.87785252, 141.9098301], end=[-50, 110]),
 
-    ## l
-    #Waypoint(label='line', pen='down', start=[-50, 110], end=[-50, 160]),
-    #Waypoint(label='line', pen='up', start=[-50, 160], end=[-80, 110]),
+    # l
+    Waypoint(label='line', pen='down', start=[-50, 110], end=[-50, 155]),
+    Waypoint(label='line', pen='up', start=[-50, 155], end=[-80, 110]),
 
-    ## d
-    #Waypoint(label='line', pen='down', start=[-80, 110], end=[-80, 160]),
-    #Waypoint(label='line', pen='up', start=[-80, 160], end=[-80, 150]),
-    #Waypoint(label='circle', pen='down', start=[-80, 150], 
-    #         radius=10, angle=np.pi, dir='ccw', arc=1),
+    # d
+    Waypoint(label='line', pen='down', start=[-80, 110], end=[-80, 155]),
+    Waypoint(label='line', pen='up', start=[-80, 160], end=[-78, 150]),
+    Waypoint(label='circle', pen='down', start=[-78, 150], 
+             radius=10, angle=np.pi, dir='ccw', arc=1.1),
 
     # go home
-    Waypoint(label='line', pen='up', start=[50, 110], end=[59, 89]),
+    Waypoint(label='line', pen='up', start=[-78, 150], end=[59, 89]),
   ]
   return Scara().getTrajectory(waypoints)
 

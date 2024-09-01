@@ -66,7 +66,7 @@ ISR(USART_RX_vect)
         if (receivedByte == PENUP) {
           motor.servo = 11;
         } else {
-          motor.servo = 8;
+          motor.servo = 9;
         }
 
       } else if (receivedByte == ENDMARKER) {
